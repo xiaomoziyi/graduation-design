@@ -131,7 +131,11 @@ export default {
   },
   mounted(){
     if(localStorage.getItem('tableData')){
-      this.myData = JSON.parse(localStorage.getItem('tableData'));
+      let tmpData = JSON.parse(localStorage.getItem('tableData'));
+      tmpData.data.forEach(value=>{
+         value.isselect = false;
+      })
+      this.myData = tmpData;
       this.ready = true;
     }else{
       localStorage.setItem('tableData',JSON.stringify(this.myData));

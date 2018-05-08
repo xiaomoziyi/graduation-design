@@ -29,9 +29,12 @@
                 </span>
               </td>
               <td v-else>
-                  <span  v-if="handleFlag == 0">{{item[col.field]}}</span>
+                  <span  v-if="handleFlag != 1">{{item[col.field]}}</span>
                   <template v-if="handleFlag == 1">
-                    <input v-if="editing[indexs][col.field]" type="text" v-model="item[col.field]" @blur="saveEditing" @key.up="saveEditing"/>
+                    <template v-for="selectkey in selectIndexData">
+                      <input v-if="selectkey == indexs" type="text" v-model="item[col.field]" @blur="saveEditing(indexs)" @key.up="saveEditing(indexs)"/>
+                    </template>
+                      <span v-if="hasIndex(indexs)">{{item[col.field]}}</span>
                   </template>
               </td>
          </template>
@@ -46,7 +49,7 @@
             </span>
           </td>
             <td v-else>
-                <input type="text" v-model="newdata[col.field]" @keyup.enter="saveAdding"/>
+                <input type="text" v-model="newdata[col.field]" @keyup.enter="saveAdding" @blur="saveAdding"/>
             </td>
        </template>
       </tr>
@@ -71,9 +74,15 @@
         <template v-for="(item,indexs) in tableData.data">
           <tr>
             <template v-for="(col,index) in tableData.columns" v-if="index >= fixedNum">
-                <td>
-                    <span>{{item[col.field]}}</span>
-                </td>
+              <td>
+                  <span  v-if="handleFlag != 1">{{item[col.field]}}</span>
+                  <template v-if="handleFlag == 1">
+                    <template v-for="selectkey in selectIndexData">
+                      <input v-if="selectkey == indexs" type="text" v-model="item[col.field]" @blur="saveEditing(indexs)" @key.up="saveEditing(indexs)"/>
+                    </template>
+                      <span v-if="hasIndex(indexs)">{{item[col.field]}}</span>
+                  </template>
+              </td>
            </template>
         </tr>
         </template>
@@ -81,7 +90,7 @@
         <tr>
           <template v-for="(col,index) in tableData.columns" v-if="index >= fixedNum">
               <td>
-                  <input type="text" v-model="newdata[col.field]" @keyup.enter="saveEditing"/>
+                  <input type="text" v-model="newdata[col.field]" @keyup.up="saveAdding" @blur="saveAdding"/>
               </td>
          </template>
         </tr>
@@ -99,29 +108,50 @@ export default {
     return {
       msg: 'Welcome to Your Vue.js App',
       all_select: false,
-      editing: null,
       value: null,
       newdata: {'isselect':false},
+      selectIndexData:[],
     }
   },
   mounted() {
     this._refreshData();
   },
+  watch:{
+    tableData:{
+      handler(newValue, oldValue) {
+　　　　　　for (let i = 0; i < newValue.data.length; i++) {
+　　　　　　　　if (oldValue.data[i] != newValue.data[i]) {
+　　　　　　　　　 this.selectIndexData = [];
+                 this.all_select = false;
+                 newValue.data[i].isselect = false;
+　　　　　　　　}
+　　　　　　}
+　　　　},
+　　　　deep: true
+    }
+  },
   methods: {
     _refreshData() {
       this.all_select = false;
-      let result = [];
-      for (let i = 0; i < this.tableData.data.length; i++) {
-        let tmp = [];
-        for (let j = 0; j < this.tableData.columns.length; j++) {
-          let key = this.tableData.columns[j].field;
-          tmp[key] = false;
+      let tmp = [];
+      let flag = false;
+      this.tableData.data.forEach((value,index)=>{
+        if(value.isselect == true){
+          flag = true;
+          tmp.push(index);
         }
-        result.push(tmp);
+      })
+      if(flag == true){
+        localStorage.removeItem('selectIndexData');
+        localStorage.setItem('selectIndexData', JSON.stringify(tmp));
+        this.selectIndexData = tmp;
       }
-      this.editing = result;
     },
     slectAll() {
+      if(this.handleFlag > 0){
+        alert('正在进行其他操作，请稍后再试。');
+        return;
+      }
       this.all_select = !this.all_select;
       if (this.all_select) { //全选
         let tmp = [];
@@ -131,15 +161,21 @@ export default {
         })
         localStorage.removeItem('selectIndexData');
         localStorage.setItem('selectIndexData', JSON.stringify(tmp));
+        this.selectIndexData = tmp;
       } else { //取消全选
         this.tableData.data.forEach(value => {
           value.isselect = false;
         })
         localStorage.removeItem('selectIndexData');
+        this.selectIndexData = [];
       }
     },
     selectOne(index) {
       let flag = true; //true为全部选中
+      if(this.handleFlag > 0){
+        alert('正在进行其他操作，请稍后再试。');
+        return;
+      }
       this.tableData.data.forEach((value, i) => {
         if (i == index) {
           value.isselect = !value.isselect;
@@ -152,8 +188,9 @@ export default {
               tmp = [];
               tmp.push(index);
             }
-            localStorage.removeItem('selectIndexData', tmp);
+            localStorage.removeItem('selectIndexData');
             localStorage.setItem('selectIndexData', JSON.stringify(tmp));
+            this.selectIndexData = tmp;
           } else {
             if (localStorage.getItem('selectIndexData')) {
               let tmp = JSON.parse(localStorage.getItem('selectIndexData'));
@@ -164,9 +201,11 @@ export default {
                 }
               })
               tmp = k;
-              localStorage.removeItem('selectIndexData', tmp);
+              localStorage.removeItem('selectIndexData');
+              this.selectIndexData = [];
               if (tmp.length >= 1) {
                 localStorage.setItem('selectIndexData', JSON.stringify(tmp));
+                this.selectIndexData = tmp;
               }
             }
           }
@@ -181,8 +220,28 @@ export default {
         this.all_select = false;
       }
     },
-    saveEditing(){
-
+    saveEditing(index){
+       localStorage.removeItem('editData');
+       let obj_list = this.tableData.data[index];
+       let result = [];
+       this.tableData.columns.forEach(value=>{
+         if(value.field != 'isselect' && value.field.indexOf('score')>-1){
+           let key = obj_list[value.field];
+           key = parseFloat(key);
+           obj_list[value.field]=null;
+           if(!isNaN(key)){
+              obj_list[value.field] = key;
+           }
+         }
+       })
+       this.tableData.data.forEach((value,i)=>{
+          if(i==index){
+            result.push(obj_list);
+          }else{
+            result.push(value);
+          }
+       })
+       localStorage.setItem('editData',JSON.stringify(result));
     },
     saveAdding() {
       localStorage.removeItem('newdata');
@@ -190,7 +249,7 @@ export default {
         if(value.field != 'isselect' && value.field.indexOf('score')>-1){
           let key = this.newdata[value.field];
           key = parseFloat(key);
-          console.log(this.newdata);
+          this.newdata[value.field]=null;
           if(!isNaN(key)){
              this.newdata[value.field] = key;
           }
@@ -200,6 +259,15 @@ export default {
     },
     OrderData(data, key) { //0为升序，1为降序
       this.$emit('ordertable', data, key);
+    },
+    hasIndex(index){
+      let flag = true;
+      this.selectIndexData.forEach(value=>{
+        if(value == index){
+          flag = false;
+        }
+      })
+      return flag;
     }
   }
 }

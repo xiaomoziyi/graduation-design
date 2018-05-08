@@ -83,12 +83,16 @@ export default {
       ishandle:false,
       orderFlag:false,
       handleFlag:0,
+      ishandling:false,
     }
   },
   created(){
   },
   mounted(){
     // this.tableData = this.myData;
+    localStorage.removeItem('newdata');
+    localStorage.removeItem('selectIndexData');
+    localStorage.removeItem('editData');
     this.tmpData = this.myData.data;
     this._refreshData();
     if(this.fixedNum){
@@ -102,6 +106,8 @@ export default {
     },
     methods:{
       _refreshData(){
+        console.log('1111');
+        console.log(this.tmpData);
         this.table_data_len = Math.ceil(this.tmpData.length/this.select_num);
         if(this.table_data_len > 1){
           let t = this.page_num;
@@ -130,32 +136,51 @@ export default {
         };
       },
       selectNumFun(data){
+        if(this.ishandling == true && this.ordering == true){
+          alert('正在进行其他操作，请稍后再试');
+          return;
+         }
           this.select_num = data;
           this.openselect = false;
           this.page_num = 1;
-          this.pageData = [];
+          localStorage.removeItem('selectIndexData');
           this._refreshData();
       },
       openSelectFun(){
         this.openselect = !this.openselect
       },
       jumpBefore(){
+        if(this.ishandling == true && this.ordering == true){
+          alert('正在进行其他操作，请稍后再试');
+          return;
+        }
         if(this.page_num == 1){
           alert('已经是首页了');
         }else{
           this.page_num = this.page_num - 1;
+          localStorage.removeItem('selectIndexData');
           this._refreshData();
         }
       },
       jumpTo(data){
+        if(this.ishandling == true && this.ordering == true){
+          alert('正在进行其他操作，请稍后再试');
+          return;
+        }
           this.page_num = data;
+          localStorage.removeItem('selectIndexData');
           this._refreshData();
       },
       jumpNext(){
+        if(this.ishandling == true && this.ordering == true){
+          alert('正在进行其他操作，请稍后再试');
+          return;
+        }
         if(this.page_num == this.table_data_len){
           alert('已经是尾页了');
         }else{
           this.page_num = this.page_num + 1;
+          localStorage.removeItem('selectIndexData');
           this._refreshData();
         }
       },
@@ -182,17 +207,21 @@ export default {
         this._refreshData();
       },
       startOrderTableData(){
+        if(this.ishandling == true){
+          alert('正在进行其他操作，请稍后再试');
+          return;
+        }
         this.ordering = false;
         this.orderFlag = true;
+        this.ishandling = true;
       },
       endOrderTableData(){
         this.ordering = true;
         this.orderFlag = false;
+        this.ishandling = false;
       },
       orderTableData(data,key){
         let tmp=this.tmpData;
-        console.log(key);
-        console.log(data);
         tmp.sort((val1,val2)=>{
           if(data == 0 ){//升序
             return val1[key] >= val2[key];
@@ -204,16 +233,38 @@ export default {
         this._refreshData();
       },
       editTableData(){
-        this.ishandle = true;
-        this.handleFlag = 1;
+        if(this.ishandling == true){
+          alert('正在进行其他操作，请稍后再试');
+          return;
+        }
+        if(localStorage.getItem('selectIndexData')){
+          let tmp = JSON.parse(localStorage.getItem('selectIndexData'));
+          console.log(tmp);
+          if(tmp.length > 0){
+            this.ishandle = true;
+            this.ishandling = true;
+            this.handleFlag = 1;
+            return;
+          }
+        }
+        alert('请选择至少一条记录');
       },
       addTableData(){
+        if(this.ishandling == true){
+          alert('正在进行其他操作，请稍后再试');
+          return;
+        }
         this.ishandle = true;
+        this.ishandling = true;
         this.handleFlag = 2;
         this.page_num = this.table_data_len;
         this._refreshData();
       },
       removeTableData(){
+        if(this.ishandling == true){
+          alert('正在进行其他操作，请稍后再试');
+          return;
+        }
         if(localStorage.getItem('selectIndexData')){
           let tmp = JSON.parse(localStorage.getItem('selectIndexData'));
           let result = this.tmpData;
@@ -247,32 +298,64 @@ export default {
           data:this.tmpData
         }
         let flag = true;
-        if(localStorage.getItem('newdata')){
-          let tmp = JSON.parse(localStorage.getItem('newdata'));
-          this.myData.columns.forEach(key=>{
-            console.log(tmp[key.field]);
-            console.log(key.field);
-            if( key.field != 'isselect' && !tmp[key.field]){
-              flag = false;
-              console.log('2333');
+        if(this.handleFlag == 1){//编辑状态
+          if(localStorage.getItem('editData')){
+            let tmp = JSON.parse(localStorage.getItem('editData'));
+            tmp.forEach(value=>{
+              this.myData.columns.forEach(key=>{
+                if( key.field != 'isselect' && !value[key.field]){
+                  flag = false;
+                }
+              })
+            })
+            if(flag == true){
+              nowData.data = tmp;
+              localStorage.removeItem('editData');
+              this.$emit('updateData',nowData);
+              this.ishandle = false;
+              this.ishandling = false;
+              this.handleFlag = 0;
+              this._refreshData();
+            }else{
+              alert('请填写完整')
             }
-          })
-          if(flag == true){
-            nowData.data.push(tmp);
-            this.$emit('updateData',nowData);
-            this.ishandle = false;
-            this.handleFlag = 0;
+          }else{
+            alert('请编辑内容，否则取消')
+          }
+        }else if(this.handleFlag == 2){//增加状态
+          if(localStorage.getItem('newdata')){
+            let tmp = JSON.parse(localStorage.getItem('newdata'));
+            this.myData.columns.forEach(key=>{
+              if( key.field != 'isselect' && !tmp[key.field]){
+                flag = false;
+              }
+            })
+            if(flag == true){
+              nowData.data.push(tmp);
+              localStorage.removeItem('newdata');
+              this.$emit('updateData',nowData);
+              this.ishandle = false;
+              this.ishandling = false;
+              this.handleFlag = 0;
+              this._refreshData();
+            }else{
+              alert('请填写完整')
+            }
           }else{
             alert('请填写完整')
-            console.log('xxsssx');
           }
-        }else{
-          alert('请填写完整')
         }
       },
       endEditing(){
+        console.log('1111');
+        console.log(this.tmpData);
           this.ishandle = false;
+          this.ishandling = false;
           this.handleFlag = 0;
+          localStorage.removeItem('newdata');
+          localStorage.removeItem('editData');
+
+          this._refreshData();
       }
     }
 }

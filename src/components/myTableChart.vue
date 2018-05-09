@@ -92,20 +92,27 @@ export default {
   created(){
   },
   mounted(){
-    // this.tableData = this.myData;
-    // localStorage.removeItem('newdata');
-    // localStorage.removeItem('selectIndexData');
-    // localStorage.removeItem('editData');
     this.tmpData = this.myData.data;
     this._refreshData();
     if(this.fixedNum){
         this.last_fixedNumber = this.fixedNum;
     }
+    this.editData = JSON.parse(JSON.stringify(this.tableData.data));
   },
   updated(){
         if(this.fixedNum){
             this.last_fixedNumber = this.fixedNum;
         }
+    },
+    watch:{
+      myData:{
+        handler(newValue,oldValue){
+          this.tmpData = this.myData.data;
+          this._refreshData();
+          this.editData = JSON.parse(JSON.stringify(this.tableData.data));
+        },
+        deep:true,
+      }
     },
     methods:{
       _refreshData(){
@@ -144,7 +151,6 @@ export default {
           this.select_num = data;
           this.openselect = false;
           this.page_num = 1;
-          // localStorage.removeItem('selectIndexData');
           this.selectIndexData = [];
           this.pageData = [];
           this.tmpData.forEach(value=>{
@@ -164,8 +170,6 @@ export default {
           alert('已经是首页了');
         }else{
           this.page_num = this.page_num - 1;
-          // localStorage.removeItem('selectIndexData');
-          // this.selectIndexData = [];
           this._refreshData();
         }
       },
@@ -175,8 +179,6 @@ export default {
           return;
         }
           this.page_num = data;
-          // localStorage.removeItem('selectIndexData');
-          // this.selectIndexData = [];
           this._refreshData();
       },
       jumpNext(){
@@ -188,8 +190,6 @@ export default {
           alert('已经是尾页了');
         }else{
           this.page_num = this.page_num + 1;
-          // localStorage.removeItem('selectIndexData');
-          // this.selectIndexData = [];
           this._refreshData();
         }
       },
@@ -248,11 +248,11 @@ export default {
         }
         if(this.selectIndexData.length > 0){
           let tmp = this.selectIndexData;
-          console.log(tmp);
           if(tmp.length > 0){
             this.ishandle = true;
             this.ishandling = true;
             this.handleFlag = 1;
+            this.editData = JSON.parse(JSON.stringify(this.tableData.data));
             return;
           }
         }
@@ -291,7 +291,6 @@ export default {
           this.pageData=[];
           this._refreshData();
           alert('删除成功');
-          // localStorage.removeItem('selectIndexData')
           this.selectIndexData = [];
         }else{
           alert('请选择至少一条数据！')
@@ -311,6 +310,7 @@ export default {
         if(this.handleFlag == 1){//编辑状态
           if(this.editData.length > 0){
             let tmp = this.editData;
+            console.log(tmp);
             tmp.forEach(value=>{
               this.myData.columns.forEach(key=>{
                 if( key.field != 'isselect' && !value[key.field]){
@@ -320,7 +320,6 @@ export default {
             })
             if(flag == true){
               nowData.data = tmp;
-              // localStorage.removeItem('editData');
               this.editData = [];
               this.$emit('updateData',nowData);
               this.ishandle = false;
@@ -343,7 +342,6 @@ export default {
             })
             if(flag == true){
               nowData.data.push(tmp);
-              // localStorage.removeItem('newdata');
               this.newdata = null;
               console.log('233333');
               console.log(nowData);
@@ -361,50 +359,32 @@ export default {
         }
       },
       endEditing(){
-          console.log('1111');
-          console.log(this.tmpData);
           this.ishandle = false;
           this.ishandling = false;
           this.handleFlag = 0;
           this.newdata = null;
           this.editData = [];
           this._refreshData();
-          console.log(this.tableData);
       },
       callFunc(status,data){
         if(status == 0){
           this.selectIndexData = data;
         }else if(status == 2 ){
           this.newdata = data;
-          console.log('newdata');
-          console.log(this.newdata);
         }
       },
       callEditFunc(value,index,key){
-        let obj_list = this.tableData.data[index];
-        let result = [];
         if(key.indexOf('num') > -1 ){
           let tmp = value;
           tmp = parseFloat(tmp);
-          obj_list[key] = null;
+          this.editData[index][key] = null;
           if (!isNaN(tmp)) {
-            obj_list[key] = tmp;
+            this.editData[index][key] = tmp;
           }
         }else{
-          obj_list[key] = value;
+          this.editData[index][key] = value;
         }
-        this.tableData.data.forEach((value, i) => {
-          if (i == index) {
-            result.push(obj_list);
-          } else {
-            result.push(value);
-          }
-        })
-        this.editData = result;
-        console.log('----');
-        console.log(this.editData);
-        console.log('++++');
-        console.log(this.tmpData);
+        this.editData[index]['isselect'] = true;
       }
     }
 }

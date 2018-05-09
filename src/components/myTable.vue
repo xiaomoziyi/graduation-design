@@ -113,10 +113,21 @@ export default {
         'isselect': false
       },
       selectIndexData: [],
+      newTableData:null,
     }
   },
   mounted() {
     this._refreshData();
+  },
+  computed:{
+    getTableData:function(){
+      return this.tableData;
+    },
+    tableVal:function(){
+      this.newTableData = this.getTableData();
+      console.log('2333SDA');
+      return this.tableData;
+    }
   },
   watch: {
     tableData: {
@@ -391,6 +402,13 @@ export default {
                     border: 1px solid #e5e5e5;
                     input {
                         width: 1.2rem;
+                        border: 0.01rem solid #e5e5e5;
+                        -webkit-user-select:auto;
+                        font-size: 0.16rem;
+                        &:focus{
+                            border: 0.01rem solid rgb(134, 122, 228);
+                            outline: none;
+                          }
                     }
                     &:first-child {
                         text-align: center;

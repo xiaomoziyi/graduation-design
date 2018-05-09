@@ -55,8 +55,8 @@
       </div>
     </div>
   </div>
-  <div class="my-chart">
-    <!-- <my-chart></my-chart> -->
+  <div class="my-chart" v-if="tableData && tableData.data.length > 0">
+    <my-chart :chartData="tableData" :yAxisData="yAxisData"></my-chart>
   </div>
 </div>
 </template>
@@ -65,7 +65,7 @@
 import myTable from './myTable.vue'
 import myChart from './myChart.vue'
 export default {
-  props:['myData','fixedNum'],
+  props:['myData','fixedNum','yAxisData'],
   components:{ myTable , myChart},
   data () {
     return {
@@ -345,6 +345,8 @@ export default {
               nowData.data.push(tmp);
               // localStorage.removeItem('newdata');
               this.newdata = null;
+              console.log('233333');
+              console.log(nowData);
               this.$emit('updateData',nowData);
               this.ishandle = false;
               this.ishandling = false;
@@ -376,8 +378,12 @@ export default {
           this.selectIndexData = data;
         }else if(status == 1){
           this.editData = data;
+          console.log('edit');
+          console.log(this.editData);
         }else if(status == 2 ){
           this.newdata = data;
+          console.log('newdata');
+          console.log(this.newdata);
         }
       }
     }
@@ -492,6 +498,7 @@ export default {
                 border: 0.01rem solid #e5e5e5;
                 padding-left: 0.1rem;
                 -webkit-user-select:auto;
+                font-size: 0.16rem;
                 &:focus{
                   border: 0.01rem solid rgb(134, 122, 228);
                   outline: none;

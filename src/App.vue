@@ -1,10 +1,10 @@
 <template>
 <div id="app" class="app">
   <div class="my-top">
-    欢迎检查我的毕设成果
+    基于Vue的表格与图表组件的设计与实现
   </div>
   <div class="my-content" v-if="ready">
-    <my-table-chart :myData="myData" :fixedNum="3" @updateData="updateData"></my-table-chart>
+    <my-table-chart :myData="myData" :fixedNum="3" :yAxisData="yAxisData" @updateData="updateData"></my-table-chart>
   </div>
 </div>
 </template>
@@ -17,6 +17,10 @@ export default {
   data() {
     return {
       ready:false,
+      yAxisData:{
+        barData:['num_score_1','num_score_2','num_score_3','num_score_4','num_score_5','num_score_6'],
+        lineData:['num_ave_score'],
+      },
       myData: {
         columns: [{
           field: "isselect",
@@ -28,102 +32,102 @@ export default {
           field: "name",
           title: "姓名"
         }, {
-          field: "num",
+          field: "student_id",
           title: "学号"
         }, {
-          field: "score_1",
+          field: "num_score_1",
           title: "科目一"
         }, {
-          field: "score_2",
+          field: "num_score_2",
           title: "科目二"
         }, {
-          field: "score_3",
+          field: "num_score_3",
           title: "科目三"
         },
         {
-          field: "score_4",
+          field: "num_score_4",
           title: "科目四"
         },{
-          field: "score_5",
+          field: "num_score_5",
           title: "科目五"
         },{
-          field: "score_6",
+          field: "num_score_6",
           title: "科目六"
         },{
-          field: "ave_score",
+          field: "num_ave_score",
           title: "平均成绩"
         }],
         data: [{
           name: '李小双',
-          num: '00001',
+          student_id: '00001',
           class: '计算机141',
-          score_1: 100,
-          score_2: 80,
-          score_3: 90,
-          score_4:90,
-          score_5:90,
-          score_6:90,
-          ave_score: 90,
+          num_score_1: 100,
+          num_score_2: 80,
+          num_score_3: 90,
+          num_score_4:90,
+          num_score_5:90,
+          num_score_6:90,
+          num_ave_score: 90,
           isselect: false,
         }, {
           name: '艾萨克',
-          num: '00002',
+          student_id: '00002',
           class: '计算机141',
-          score_1: 90,
-          score_2: 90,
-          score_3: 90,
-          score_4:90,
-          score_5:90,
-          score_6:90,
-          ave_score: 90,
+          num_score_1: 90,
+          num_score_2: 90,
+          num_score_3: 90,
+          num_score_4:90,
+          num_score_5:90,
+          num_score_6:90,
+          num_ave_score: 90,
           isselect: false,
         }, {
           name: '安安',
-          num: '00003',
+          student_id: '00003',
           class: '计算机141',
-          score_1: 70,
-          score_2: 80,
-          score_3: 90,
-          score_4:80,
-          score_5:80,
-          score_6:80,
-          ave_score: 80,
+          num_score_1: 70,
+          num_score_2: 80,
+          num_score_3: 90,
+          num_score_4:80,
+          num_score_5:80,
+          num_score_6:80,
+          num_ave_score: 80,
           isselect: false,
         }, {
           name: '手东方',
-          num: '00004',
+          student_id: '00004',
           class: '计算机141',
-          score_1: 100,
-          score_2: 80,
-          score_3: 90,
-          score_4:90,
-          score_5:90,
-          score_6:90,
-          ave_score: 90,
+          num_score_1: 100,
+          num_score_2: 80,
+          num_score_3: 90,
+          num_score_4:90,
+          num_score_5:90,
+          num_score_6:90,
+          num_ave_score: 90,
           isselect: false,
         }, {
           name: '奥森',
-          num: '00005',
+          student_id: '00005',
           class: '计算机141',
-          score_1: 70,
-          score_2: 70,
-          score_3: 70,
-          score_4:70,
-          score_5:70,
-          score_6:70,
-          ave_score: 70,
+          num_score_1: 70,
+          num_score_2: 70,
+          num_score_3: 70,
+          num_score_4:70,
+          num_score_5:70,
+          num_score_6:70,
+          num_ave_score: 70,
           isselect: false,
         }, {
           name: '西尼',
-          num: '00006',
+          student_id: '00006',
           class: '计算机141',
-          score_1: 70,
-          score_2: 70,
-          score_3: 70,
-          score_4:70,
-          score_5:70,
-          score_6:70,
-          ave_score: 70,
+          num_score_1: 70,
+          num_score_2: 70,
+          num_score_3: 70,
+          num_score_4:70,
+          num_score_5:70,
+          num_score_6:70,
+          num_ave_score: 70,
           isselect: false,
         }]
       }

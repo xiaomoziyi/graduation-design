@@ -171,7 +171,7 @@ export default {
       },
       legend: {
         show: true,
-        left: '12%',
+        left: '8%',
         top:'82%',
         itemWidth: 10,
         itemHeight: 10,
@@ -181,8 +181,8 @@ export default {
         }
       },
       grid: {
-        left: '12%',
-        right: '12%',
+        left: '8%',
+        right: '8%',
         top: '8%',
         height: '60%',
       },

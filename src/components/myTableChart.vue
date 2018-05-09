@@ -21,7 +21,7 @@
          <div class="right-order" v-if="ordering" @click="startOrderTableData">
             <span>排序</span>
          </div>
-         <div class="right-order" v-if="!ordering" style="background:#CECEFF" @click="endOrderTableData">
+         <div class="right-order" v-if="!ordering" style="background:#B9B9FF;color:#fff" @click="endOrderTableData">
             <span>取消</span>
          </div>
          <div class="right-botton" @click="editTableData">
@@ -35,7 +35,7 @@
          </div>
        </div>
     </div>
-    <my-table :tableData="tableData" :fixedNum="last_fixedNumber" :orderFlag="orderFlag" :handleFlag="handleFlag" @ordertable="orderTableData" @callFunc="callFunc" ></my-table>
+    <my-table :tableData="tableData" :fixedNum="last_fixedNumber" :orderFlag="orderFlag" :handleFlag="handleFlag" @ordertable="orderTableData" @callFunc="callFunc" @callEditFunc="callEditFunc"></my-table>
     <div class="table-bottom">
       <div class="bottom-left" v-show="ishandle">
         <div class="left-botton" style="background:#73BF00;" @click="saveEditing">
@@ -361,30 +361,50 @@ export default {
         }
       },
       endEditing(){
-        console.log('1111');
-        console.log(this.tmpData);
+          console.log('1111');
+          console.log(this.tmpData);
           this.ishandle = false;
           this.ishandling = false;
           this.handleFlag = 0;
-          // localStorage.removeItem('newdata');
-          // localStorage.removeItem('editData');
           this.newdata = null;
           this.editData = [];
-
           this._refreshData();
+          console.log(this.tableData);
       },
       callFunc(status,data){
         if(status == 0){
           this.selectIndexData = data;
-        }else if(status == 1){
-          this.editData = data;
-          console.log('edit');
-          console.log(this.editData);
         }else if(status == 2 ){
           this.newdata = data;
           console.log('newdata');
           console.log(this.newdata);
         }
+      },
+      callEditFunc(value,index,key){
+        let obj_list = this.tableData.data[index];
+        let result = [];
+        if(key.indexOf('num') > -1 ){
+          let tmp = value;
+          tmp = parseFloat(tmp);
+          obj_list[key] = null;
+          if (!isNaN(tmp)) {
+            obj_list[key] = tmp;
+          }
+        }else{
+          obj_list[key] = value;
+        }
+        this.tableData.data.forEach((value, i) => {
+          if (i == index) {
+            result.push(obj_list);
+          } else {
+            result.push(value);
+          }
+        })
+        this.editData = result;
+        console.log('----');
+        console.log(this.editData);
+        console.log('++++');
+        console.log(this.tmpData);
       }
     }
 }
@@ -511,7 +531,7 @@ export default {
               border: 0.01rem solid #e5e5e5;
               font-size: 0.16rem;
               float: right;
-              color:	#4D0000;
+              color:	#8E8E8E;
               margin-right: 0.2rem;
               line-height: 0.4rem;
               text-align: center;
@@ -523,7 +543,7 @@ export default {
               border: 0.01rem solid #e5e5e5;
               font-size: 0.16rem;
               float: right;
-              color:	#4D0000;
+              color:#8E8E8E;
               margin-right: 0.2rem;
               line-height: 0.4rem;
               text-align: center;

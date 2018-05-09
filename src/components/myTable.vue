@@ -34,10 +34,10 @@
                     <template v-for="selectkey in selectIndexData">
                       <input v-if="selectkey == indexs" type="text" v-model="item[col.field]" @blur="saveEditing(indexs)" @key.up="saveEditing(indexs)"/>
                     </template>
-                      <span v-if="hasIndex(indexs)">{{item[col.field]}}</span>
-                  </template>
-              </td>
-         </template>
+      <span v-if="hasIndex(indexs)">{{item[col.field]}}</span>
+      </template>
+      </td>
+      </template>
       </tr>
       </template>
       <template v-if="handleFlag==2">
@@ -80,10 +80,10 @@
                     <template v-for="selectkey in selectIndexData">
                       <input v-if="selectkey == indexs" type="text" v-model="item[col.field]" @blur="saveEditing(indexs)" @key.up="saveEditing(indexs)"/>
                     </template>
-                      <span v-if="hasIndex(indexs)">{{item[col.field]}}</span>
-                  </template>
-              </td>
-           </template>
+        <span v-if="hasIndex(indexs)">{{item[col.field]}}</span>
+        </template>
+        </td>
+        </template>
         </tr>
         </template>
         <template v-if="handleFlag==2">
@@ -109,46 +109,69 @@ export default {
       msg: 'Welcome to Your Vue.js App',
       all_select: false,
       value: null,
-      newdata: {'isselect':false},
-      selectIndexData:[],
+      newdata: {
+        'isselect': false
+      },
+      selectIndexData: [],
     }
   },
   mounted() {
     this._refreshData();
   },
-  watch:{
-    tableData:{
+  watch: {
+    tableData: {
       handler(newValue, oldValue) {
-　　　　　　for (let i = 0; i < newValue.data.length; i++) {
-　　　　　　　　if (oldValue.data[i] != newValue.data[i]) {
-　　　　　　　　　 this.selectIndexData = [];
-                 this.all_select = false;
-                 newValue.data[i].isselect = false;
-　　　　　　　　}
-　　　　　　}
-　　　　},
-　　　　deep: true
+        // if (oldValue.data.length != newValue.data.length) {
+        //   for (let i = 0; i < newValue.data.length; i++) {　　　　　　　　　　　　
+        //     this.selectIndexData = [];
+        //     this.all_select = false;
+        //     newValue.data[i].isselect = false;　　　　　　　　　　
+        //   }
+        // }　　　　　　
+        // for (let i = 0; i < newValue.data.length; i++) {　　　　　　　　
+        //   if (oldValue.data[i] != newValue.data[i]) {　　　　　　　　　
+        //     this.selectIndexData = [];
+        //     this.all_select = false;
+        //     for(let k = 0 ; k < newValue.data.length; k++){
+        //       newValue.data[k].isselect = false;　　
+        //     }　
+        //     break;　　
+        //   }　　　　　　
+        // }　　
+        let tmp = [];
+        this.all_select = true;
+        for (let i = 0; i < newValue.data.length; i++) {　
+          if(newValue.data[i].isselect == false){
+            this.all_select = false;
+          }else{
+            tmp.push(i);
+          }
+        }　
+        this.selectIndexData = tmp;
+        this.$emit('callFunc',0,this.selectIndexData);
+      },
+      　deep: true
     }
   },
   methods: {
     _refreshData() {
-      this.all_select = false;
       let tmp = [];
       let flag = false;
-      this.tableData.data.forEach((value,index)=>{
-        if(value.isselect == true){
+      this.tableData.data.forEach((value, index) => {
+        if (value.isselect == true) {
           flag = true;
           tmp.push(index);
         }
       })
-      if(flag == true){
-        localStorage.removeItem('selectIndexData');
-        localStorage.setItem('selectIndexData', JSON.stringify(tmp));
+      if (flag == true) {
+        // localStorage.removeItem('selectIndexData');
+        // localStorage.setItem('selectIndexData', JSON.stringify(tmp));
         this.selectIndexData = tmp;
+        this.$emit('callFunc', 0, this.selectIndexData);
       }
     },
     slectAll() {
-      if(this.handleFlag > 0){
+      if (this.handleFlag > 0) {
         alert('正在进行其他操作，请稍后再试。');
         return;
       }
@@ -159,20 +182,24 @@ export default {
           value.isselect = true;
           tmp.push(m);
         })
-        localStorage.removeItem('selectIndexData');
-        localStorage.setItem('selectIndexData', JSON.stringify(tmp));
+        // localStorage.removeItem('selectIndexData');
+        // localStorage.setItem('selectIndexData', JSON.stringify(tmp));
         this.selectIndexData = tmp;
+        this.$emit('callFunc', 0, this.selectIndexData);
       } else { //取消全选
         this.tableData.data.forEach(value => {
           value.isselect = false;
         })
-        localStorage.removeItem('selectIndexData');
         this.selectIndexData = [];
+        this.$emit('callFunc', 0, this.selectIndexData);
+        // localStorage.removeItem('selectIndexData');
+        this.selectIndexData = [];
+
       }
     },
     selectOne(index) {
       let flag = true; //true为全部选中
-      if(this.handleFlag > 0){
+      if (this.handleFlag > 0) {
         alert('正在进行其他操作，请稍后再试。');
         return;
       }
@@ -181,19 +208,20 @@ export default {
           value.isselect = !value.isselect;
           if (value.isselect) { //选中
             let tmp = [];
-            if (localStorage.getItem('selectIndexData')) {
-              tmp = JSON.parse(localStorage.getItem('selectIndexData'));
+            if (this.selectIndexData.length > 0) {
+              tmp = this.selectIndexData;
               tmp.push(index);
             } else {
               tmp = [];
               tmp.push(index);
             }
-            localStorage.removeItem('selectIndexData');
-            localStorage.setItem('selectIndexData', JSON.stringify(tmp));
+            // localStorage.removeItem('selectIndexData');
+            // localStorage.setItem('selectIndexData', JSON.stringify(tmp));
             this.selectIndexData = tmp;
+            this.$emit('callFunc', 0, this.selectIndexData);
           } else {
-            if (localStorage.getItem('selectIndexData')) {
-              let tmp = JSON.parse(localStorage.getItem('selectIndexData'));
+            if (this.selectIndexData.length > 0) {
+              let tmp = this.selectIndexData;
               let k = tmp;
               tmp.forEach((value, i) => {
                 if (value == index) {
@@ -201,11 +229,12 @@ export default {
                 }
               })
               tmp = k;
-              localStorage.removeItem('selectIndexData');
+              // localStorage.removeItem('selectIndexData');
               this.selectIndexData = [];
               if (tmp.length >= 1) {
-                localStorage.setItem('selectIndexData', JSON.stringify(tmp));
+                // localStorage.setItem('selectIndexData', JSON.stringify(tmp));
                 this.selectIndexData = tmp;
+                this.$emit('callFunc', 0, this.selectIndexData);
               }
             }
           }
@@ -220,50 +249,52 @@ export default {
         this.all_select = false;
       }
     },
-    saveEditing(index){
-       localStorage.removeItem('editData');
-       let obj_list = this.tableData.data[index];
-       let result = [];
-       this.tableData.columns.forEach(value=>{
-         if(value.field != 'isselect' && value.field.indexOf('score')>-1){
-           let key = obj_list[value.field];
-           key = parseFloat(key);
-           obj_list[value.field]=null;
-           if(!isNaN(key)){
-              obj_list[value.field] = key;
-           }
-         }
-       })
-       this.tableData.data.forEach((value,i)=>{
-          if(i==index){
-            result.push(obj_list);
-          }else{
-            result.push(value);
-          }
-       })
-       localStorage.setItem('editData',JSON.stringify(result));
-    },
-    saveAdding() {
-      localStorage.removeItem('newdata');
-      this.tableData.columns.forEach(value=>{
-        if(value.field != 'isselect' && value.field.indexOf('score')>-1){
-          let key = this.newdata[value.field];
+    saveEditing(index) {
+      // localStorage.removeItem('editData');
+      let obj_list = this.tableData.data[index];
+      let result = [];
+      this.tableData.columns.forEach(value => {
+        if (value.field != 'isselect' && value.field.indexOf('score') > -1) {
+          let key = obj_list[value.field];
           key = parseFloat(key);
-          this.newdata[value.field]=null;
-          if(!isNaN(key)){
-             this.newdata[value.field] = key;
+          obj_list[value.field] = null;
+          if (!isNaN(key)) {
+            obj_list[value.field] = key;
           }
         }
       })
-      localStorage.setItem('newdata',JSON.stringify(this.newdata));
+      this.tableData.data.forEach((value, i) => {
+        if (i == index) {
+          result.push(obj_list);
+        } else {
+          result.push(value);
+        }
+      })
+      // localStorage.setItem('editData',JSON.stringify(result));
+      this.$emit('callFunc', 1, result);
+    },
+    saveAdding() {
+      // localStorage.removeItem('newdata');
+      this.tableData.columns.forEach(value => {
+        if (value.field != 'isselect' && value.field.indexOf('score') > -1) {
+          let key = this.newdata[value.field];
+          key = parseFloat(key);
+          this.newdata[value.field] = null;
+          if (!isNaN(key)) {
+            this.newdata[value.field] = key;
+          }
+        }
+      })
+      // localStorage.setItem('newdata',JSON.stringify(this.newdata));
+      this.$emit('callFunc', 2, this.newdata);
     },
     OrderData(data, key) { //0为升序，1为降序
       this.$emit('ordertable', data, key);
     },
-    hasIndex(index){
+    hasIndex(index) {
       let flag = true;
-      this.selectIndexData.forEach(value=>{
-        if(value == index){
+      this.selectIndexData.forEach(value => {
+        if (value == index) {
           flag = false;
         }
       })
@@ -358,8 +389,8 @@ export default {
                     white-space: nowrap;
                     background: #fff;
                     border: 1px solid #e5e5e5;
-                    input{
-                      width: 1.2rem;
+                    input {
+                        width: 1.2rem;
                     }
                     &:first-child {
                         text-align: center;

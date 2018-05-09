@@ -35,7 +35,7 @@
          </div>
        </div>
     </div>
-    <my-table :tableData="tableData" :fixedNum="last_fixedNumber" :orderFlag="orderFlag" :handleFlag="handleFlag" @ordertable="orderTableData"></my-table>
+    <my-table :tableData="tableData" :fixedNum="last_fixedNumber" :orderFlag="orderFlag" :handleFlag="handleFlag" @ordertable="orderTableData" @callFunc="callFunc" ></my-table>
     <div class="table-bottom">
       <div class="bottom-left" v-show="ishandle">
         <div class="left-botton" style="background:#73BF00;" @click="saveEditing">
@@ -84,15 +84,18 @@ export default {
       orderFlag:false,
       handleFlag:0,
       ishandling:false,
+      selectIndexData:[],
+      editData:[],
+      newdata:null,
     }
   },
   created(){
   },
   mounted(){
     // this.tableData = this.myData;
-    localStorage.removeItem('newdata');
-    localStorage.removeItem('selectIndexData');
-    localStorage.removeItem('editData');
+    // localStorage.removeItem('newdata');
+    // localStorage.removeItem('selectIndexData');
+    // localStorage.removeItem('editData');
     this.tmpData = this.myData.data;
     this._refreshData();
     if(this.fixedNum){
@@ -106,8 +109,6 @@ export default {
     },
     methods:{
       _refreshData(){
-        console.log('1111');
-        console.log(this.tmpData);
         this.table_data_len = Math.ceil(this.tmpData.length/this.select_num);
         if(this.table_data_len > 1){
           let t = this.page_num;
@@ -117,7 +118,7 @@ export default {
             tmp.push(t++);
           };
           this.pageData = tmp;
-          if(this.page_num >= data[0] && this.page_num <= data[data.length-1]){
+          if(this.page_num >= data[0] && this.page_num <= data[data.length-1] && this.table_data_len >= data[data.length-1]){
             this.pageData = data;
           }
         }else{
@@ -143,8 +144,13 @@ export default {
           this.select_num = data;
           this.openselect = false;
           this.page_num = 1;
-          localStorage.removeItem('selectIndexData');
-          this._refreshData();
+          // localStorage.removeItem('selectIndexData');
+          this.selectIndexData = [];
+          this.pageData = [];
+          this.tmpData.forEach(value=>{
+            value.isselect = false;
+          })
+          this._refreshData();;
       },
       openSelectFun(){
         this.openselect = !this.openselect
@@ -158,7 +164,8 @@ export default {
           alert('已经是首页了');
         }else{
           this.page_num = this.page_num - 1;
-          localStorage.removeItem('selectIndexData');
+          // localStorage.removeItem('selectIndexData');
+          // this.selectIndexData = [];
           this._refreshData();
         }
       },
@@ -168,7 +175,8 @@ export default {
           return;
         }
           this.page_num = data;
-          localStorage.removeItem('selectIndexData');
+          // localStorage.removeItem('selectIndexData');
+          // this.selectIndexData = [];
           this._refreshData();
       },
       jumpNext(){
@@ -180,7 +188,8 @@ export default {
           alert('已经是尾页了');
         }else{
           this.page_num = this.page_num + 1;
-          localStorage.removeItem('selectIndexData');
+          // localStorage.removeItem('selectIndexData');
+          // this.selectIndexData = [];
           this._refreshData();
         }
       },
@@ -237,8 +246,8 @@ export default {
           alert('正在进行其他操作，请稍后再试');
           return;
         }
-        if(localStorage.getItem('selectIndexData')){
-          let tmp = JSON.parse(localStorage.getItem('selectIndexData'));
+        if(this.selectIndexData.length > 0){
+          let tmp = this.selectIndexData;
           console.log(tmp);
           if(tmp.length > 0){
             this.ishandle = true;
@@ -265,8 +274,8 @@ export default {
           alert('正在进行其他操作，请稍后再试');
           return;
         }
-        if(localStorage.getItem('selectIndexData')){
-          let tmp = JSON.parse(localStorage.getItem('selectIndexData'));
+        if(this.selectIndexData.length > 0){
+          let tmp = this.selectIndexData;
           let result = this.tmpData;
           let data=[];
           tmp.forEach(value=>{
@@ -282,7 +291,8 @@ export default {
           this.pageData=[];
           this._refreshData();
           alert('删除成功');
-          localStorage.removeItem('selectIndexData')
+          // localStorage.removeItem('selectIndexData')
+          this.selectIndexData = [];
         }else{
           alert('请选择至少一条数据！')
         }
@@ -299,8 +309,8 @@ export default {
         }
         let flag = true;
         if(this.handleFlag == 1){//编辑状态
-          if(localStorage.getItem('editData')){
-            let tmp = JSON.parse(localStorage.getItem('editData'));
+          if(this.editData.length > 0){
+            let tmp = this.editData;
             tmp.forEach(value=>{
               this.myData.columns.forEach(key=>{
                 if( key.field != 'isselect' && !value[key.field]){
@@ -310,7 +320,8 @@ export default {
             })
             if(flag == true){
               nowData.data = tmp;
-              localStorage.removeItem('editData');
+              // localStorage.removeItem('editData');
+              this.editData = [];
               this.$emit('updateData',nowData);
               this.ishandle = false;
               this.ishandling = false;
@@ -323,8 +334,8 @@ export default {
             alert('请编辑内容，否则取消')
           }
         }else if(this.handleFlag == 2){//增加状态
-          if(localStorage.getItem('newdata')){
-            let tmp = JSON.parse(localStorage.getItem('newdata'));
+          if(this.newdata){
+            let tmp = this.newdata;
             this.myData.columns.forEach(key=>{
               if( key.field != 'isselect' && !tmp[key.field]){
                 flag = false;
@@ -332,7 +343,8 @@ export default {
             })
             if(flag == true){
               nowData.data.push(tmp);
-              localStorage.removeItem('newdata');
+              // localStorage.removeItem('newdata');
+              this.newdata = null;
               this.$emit('updateData',nowData);
               this.ishandle = false;
               this.ishandling = false;
@@ -352,10 +364,21 @@ export default {
           this.ishandle = false;
           this.ishandling = false;
           this.handleFlag = 0;
-          localStorage.removeItem('newdata');
-          localStorage.removeItem('editData');
+          // localStorage.removeItem('newdata');
+          // localStorage.removeItem('editData');
+          this.newdata = null;
+          this.editData = [];
 
           this._refreshData();
+      },
+      callFunc(status,data){
+        if(status == 0){
+          this.selectIndexData = data;
+        }else if(status == 1){
+          this.editData = data;
+        }else if(status == 2 ){
+          this.newdata = data;
+        }
       }
     }
 }

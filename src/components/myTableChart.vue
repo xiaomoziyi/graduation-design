@@ -110,6 +110,7 @@ export default {
           this.tmpData = this.myData.data;
           this._refreshData();
           this.editData = JSON.parse(JSON.stringify(this.tableData.data));
+          // this.search_text = null;
         },
         deep:true,
       }
@@ -195,6 +196,12 @@ export default {
       },
       serchItem(data){
         let result = [];
+        if(!data){ //不填入关键字则查询全部
+          this.tmpData = this.myData.data;
+          this.page_num = 1;
+          this._refreshData();
+          return;
+        }
         let tmp = this.myData.data;
         for(let value of this.myData.data){
           for(let key of this.myData.columns){
@@ -228,6 +235,7 @@ export default {
         this.ordering = true;
         this.orderFlag = false;
         this.ishandling = false;
+        this.tmpData = this.myData.data;
       },
       orderTableData(data,key){
         let tmp=this.tmpData;
@@ -291,15 +299,15 @@ export default {
           this.pageData=[];
           this._refreshData();
           alert('删除成功');
+          let nowData={
+            columns:this.myData.columns,
+            data:this.tmpData
+          }
+          this.$emit('updateData',nowData);
           this.selectIndexData = [];
         }else{
           alert('请选择至少一条数据！')
         }
-        let nowData={
-          columns:this.myData.columns,
-          data:this.tmpData
-        }
-        this.$emit('updateData',nowData);
       },
       saveEditing(){
         let nowData={
@@ -310,7 +318,6 @@ export default {
         if(this.handleFlag == 1){//编辑状态
           if(this.editData.length > 0){
             let tmp = this.editData;
-            console.log(tmp);
             tmp.forEach(value=>{
               this.myData.columns.forEach(key=>{
                 if( key.field != 'isselect' && !value[key.field]){
@@ -343,8 +350,6 @@ export default {
             if(flag == true){
               nowData.data.push(tmp);
               this.newdata = null;
-              console.log('233333');
-              console.log(nowData);
               this.$emit('updateData',nowData);
               this.ishandle = false;
               this.ishandling = false;

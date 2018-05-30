@@ -157,8 +157,7 @@ export default {
       }
     },
     getTableData(tabledata){
-       return JSON.parse(JSON.stringify(tabledata.data))
-;
+       return JSON.parse(JSON.stringify(tabledata.data));
     },
     slectAll() {
       if (this.handleFlag > 0) {
@@ -288,8 +287,6 @@ export default {
     handleEditInput(e,index,key){
       let value = e.target.value;
       // this.newTableData[index][key]=value;
-      console.log('00000');
-      console.log(this.tableData.data);
       this.$emit('callEditFunc',value,index,key);
     }
   }
